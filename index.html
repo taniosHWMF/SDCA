@@ -56,6 +56,14 @@
                                 title: {
                                     display: true,
                                     text: 'Realized Price (Times 2)'
+                                },
+                                type: 'logarithmic', // Logarithmic y-axis
+                                position: 'left',
+                                ticks: {
+                                    // Optional: Format ticks in scientific notation
+                                    callback: function(value) {
+                                        return value.toExponential(); // Format in scientific notation
+                                    }
                                 }
                             }
                         }
