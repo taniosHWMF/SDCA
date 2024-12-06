@@ -35,7 +35,7 @@
                         data: realizedPriceSTH,
                         borderColor: 'rgb(75, 192, 192)', // Line color
                         fill: false, // No fill under the line
-                        tension: 0.1 // Smoothness of the line
+                        tension: 0 // Remove smoothing (straight line)
                     }]
                 };
 
@@ -56,6 +56,14 @@
                                 title: {
                                     display: true,
                                     text: 'Realized PriceSTH'
+                                },
+                                type: 'logarithmic', // Set the y-axis to logarithmic
+                                position: 'left',
+                                ticks: {
+                                    // Optional: Format ticks to display in a readable way
+                                    callback: function(value) {
+                                        return value.toLocaleString(); // Format numbers with commas
+                                    }
                                 }
                             }
                         }
