@@ -23,13 +23,13 @@
             .then(response => response.text())
             .then(csvData => {
                 // Parse the CSV data into rows and values
-                const rows = csvData.split('\n').map(row => row.split(','));
+                const rows = csvData.split('\n').map(row => row.split(';'));
 
                 // Skip the header and process the data from the second row
                 const labels = rows.slice(1).map(row => {
-                    // Parse the date in DD.MM.YYYY format
-                    const dateParts = row[0].split('.');
-                    return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]).toLocaleDateString();
+                    // Parse the date in YY-MM-DD format (adjust for the new format)
+                    const dateParts = row[0].split('-');
+                    return new Date(`20${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`).toLocaleDateString();
                 }); // Dates (first column)
 
                 const realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2])); // RealizedPriceSTH (third column)
