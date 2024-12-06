@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realized Price Data Plot (Times 2)</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
+    <title>Realized Price Data Plot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script> <!-- Specified version -->
 </head>
 <body>
-    <h1>Realized Price Data (Times 2)</h1>
+    <h1>Realized Price Data Plot</h1>
     <div style="width: 80%; margin: auto;">
         <canvas id="myChart"></canvas>
     </div>
 
     <script>
-        // URL to your public CSV file
-        const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/RealizedPriceSTH.csv';
+        // URL to your updated public CSV file
+        const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/BTC%20Close%20Price%20&%20RealizedPriceSTH.py';
 
         // Fetch the CSV file
         fetch(csvUrl)
@@ -23,9 +23,9 @@
                 // Parse the CSV data into rows and values
                 const rows = csvData.split('\n').map(row => row.split(','));
 
-                // Extract dates and values, multiplying values by 2
-                const labels = rows.map(row => row[0]); // Dates (first column)
-                const values = rows.map(row => parseFloat(row[1]) * 2); // Values (second column), times two
+                // Extract dates and RealizedPriceSTH, multiplying RealizedPriceSTH values by 2
+                const labels = rows.slice(1).map(row => row[0]); // Dates (first column), skip header
+                const values = rows.slice(1).map(row => parseFloat(row[2]) * 2); // RealizedPriceSTH (third column), times two
 
                 // Chart.js data structure
                 const data = {
@@ -59,12 +59,10 @@
                                 },
                                 type: 'logarithmic', // Logarithmic y-axis
                                 position: 'left',
-                                // Optional: Customize the ticks if necessary
                                 ticks: {
-                                    min: 0.01, // Make sure there's no zero (required for log scale)
+                                    min: 0.01, // Ensure no zero values
                                     callback: function(value) {
-                                        // Use a more readable format (e.g., `1,000` instead of `1e+3`)
-                                        return value.toLocaleString(); // Adds commas for thousands
+                                        return value.toLocaleString(); // Format numbers with commas
                                     }
                                 }
                             }
