@@ -3,26 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTC and Realized Price with Z-Score</title>
+    <title>Realized Price Plot</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script> <!-- Specified version -->
 </head>
 <body>
-    <h1>BTC Close Price, Realized Price and Z-Score</h1>
+    <h1>Realized Price Data (Logarithmic Scale)</h1>
 
-    <!-- First Chart: BTC and Realized Price with Logarithmic Y-Axis -->
+    <!-- Chart: Realized Price with Logarithmic Y-Axis -->
     <div style="width: 80%; margin: auto;">
-        <h2>BTC Close Price and Realized Price (Logarithmic Scale)</h2>
-        <canvas id="chart1"></canvas>
-    </div>
-
-    <!-- Second Chart: Z-Score -->
-    <div style="width: 80%; margin: auto;">
-        <h2>Z-Score (BTC Close Price to Realized Price)</h2>
-        <canvas id="chart2"></canvas>
+        <canvas id="chart"></canvas>
     </div>
 
     <script>
-        // URL to your updated public CSV file
+        // URL to your public CSV file
         const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/BTC%20Close%20Price%20&%20RealizedPriceSTH.py';
 
         // Fetch the CSV file
@@ -39,54 +32,24 @@
                     return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]).toLocaleDateString();
                 }); // Dates (first column)
 
-                const btcClosePrices = rows.slice(1).map(row => parseFloat(row[1])); // BTC Close Price (second column)
                 const realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2])); // RealizedPriceSTH (third column)
 
-                // Compute the ratio of BTC close price to RealizedPriceSTH
-                const ratios = btcClosePrices.map((price, index) => price / realizedPriceSTH[index]);
-
-                // Function to compute the rolling z-score
-                function calculateZScore(data, windowSize) {
-                    let zScores = [];
-                    for (let i = windowSize - 1; i < data.length; i++) {
-                        let windowData = data.slice(i - windowSize + 1, i + 1);
-                        let mean = windowData.reduce((sum, value) => sum + value, 0) / windowSize;
-                        let variance = windowData.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / windowSize;
-                        let stdDev = Math.sqrt(variance);
-                        let zScore = (data[i] - mean) / stdDev;
-                        zScores.push(zScore);
-                    }
-                    return zScores;
-                }
-
-                // Calculate the z-scores for the ratios over a window of 365 days
-                const zScores = calculateZScore(ratios, 365);
-
-                // Chart 1 Data (BTC and Realized Price with Logarithmic Scale)
-                const data1 = {
+                // Chart Data (Realized PriceSTH with Logarithmic Scale)
+                const data = {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'BTC Close Price',
-                            data: btcClosePrices,
-                            borderColor: 'rgb(75, 192, 192)', // Line color
-                            fill: false,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Realized PriceSTH',
-                            data: realizedPriceSTH,
-                            borderColor: 'rgb(153, 102, 255)', // Line color
-                            fill: false,
-                            tension: 0.1
-                        }
-                    ]
+                    datasets: [{
+                        label: 'Realized PriceSTH',
+                        data: realizedPriceSTH,
+                        borderColor: 'rgb(153, 102, 255)', // Line color
+                        fill: false,
+                        tension: 0.1
+                    }]
                 };
 
-                // Chart 1 Configuration (Logarithmic Y-Axis)
-                const config1 = {
+                // Chart Configuration (Logarithmic Y-Axis)
+                const config = {
                     type: 'line',
-                    data: data1,
+                    data: data,
                     options: {
                         responsive: true,
                         scales: {
@@ -104,13 +67,12 @@
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Price (Logarithmic Scale)'
+                                    text: 'Realized PriceSTH (Logarithmic Scale)'
                                 },
                                 type: 'logarithmic', // Logarithmic y-axis
                                 position: 'left',
                                 ticks: {
-                                    min: 1000, // Minimum value set to $1000
-                                    max: 100000, // Maximum value set to $100,000
+                                    min: 0.01, // Ensure no zero values
                                     callback: function(value) {
                                         return value.toLocaleString(); // Format numbers with commas
                                     }
@@ -120,51 +82,8 @@
                     }
                 };
 
-                // Chart 2 Data (Z-Score)
-                const data2 = {
-                    labels: labels.slice(365 - 1), // Start from the 365th day (for Z-Score)
-                    datasets: [{
-                        label: 'Z-Score of BTC Close Price to Realized Price',
-                        data: zScores,
-                        borderColor: 'rgb(255, 99, 132)', // Line color
-                        fill: false, // No fill
-                        tension: 0.1
-                    }]
-                };
-
-                // Chart 2 Configuration (Regular Y-Axis)
-                const config2 = {
-                    type: 'line',
-                    data: data2,
-                    options: {
-                        responsive: true,
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Date'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Z-Score'
-                                },
-                                ticks: {
-                                    callback: function(value) {
-                                        return value.toFixed(2); // Format z-score to 2 decimal places
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-
-                // Create the first chart (BTC and Realized Price with Logarithmic Scale)
-                const myChart1 = new Chart(document.getElementById('chart1'), config1);
-
-                // Create the second chart (Z-Score)
-                const myChart2 = new Chart(document.getElementById('chart2'), config2);
+                // Create the chart
+                const myChart = new Chart(document.getElementById('chart'), config);
             })
             .catch(error => console.error('Error loading or parsing CSV:', error));
     </script>
