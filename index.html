@@ -27,13 +27,18 @@
 
         // Fetch the CSV file
         fetch(csvUrl)
-            .then(response => response.text()) // Fetch as text
+            .then(response => response.text())
             .then(csvData => {
                 // Parse the CSV data into rows and values
                 const rows = csvData.split('\n').map(row => row.split(','));
 
-                // Extract the BTC close price and RealizedPriceSTH, skipping the header
-                const labels = rows.slice(1).map(row => row[0]); // Dates (first column)
+                // Skip the header and process the data from the second row
+                const labels = rows.slice(1).map(row => {
+                    // Parse the date in DD.MM.YYYY format
+                    const dateParts = row[0].split('.');
+                    return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]).toLocaleDateString();
+                }); // Dates (first column)
+
                 const btcClosePrices = rows.slice(1).map(row => parseFloat(row[1])); // BTC Close Price (second column)
                 const realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2])); // RealizedPriceSTH (third column)
 
@@ -89,6 +94,11 @@
                                 title: {
                                     display: true,
                                     text: 'Date'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value; // Keep the date format intact
+                                    }
                                 }
                             },
                             y: {
