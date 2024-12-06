@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realized Price Data Plot (Times 2)</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script> <!-- Specified version -->
 </head>
 <body>
     <h1>Realized Price Data (Times 2)</h1>
@@ -26,6 +26,8 @@
                 // Extract dates and values, multiplying values by 2
                 const labels = rows.map(row => row[0]); // Dates (first column)
                 const values = rows.map(row => parseFloat(row[1]) * 2); // Values (second column), times two
+
+                console.log(values);  // Debugging: Check if values are positive
 
                 // Chart.js data structure
                 const data = {
@@ -59,11 +61,9 @@
                                 },
                                 type: 'logarithmic', // Logarithmic y-axis
                                 position: 'left',
+                                // Optional: Customize the ticks if necessary
                                 ticks: {
-                                    // Optional: Format ticks in scientific notation
-                                    callback: function(value) {
-                                        return value.toExponential(); // Format in scientific notation
-                                    }
+                                    min: 0.01, // Make sure there's no zero (required for log scale)
                                 }
                             }
                         }
