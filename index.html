@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realized Price Data Plot</title>
+    <title>Z-Score of BTC Close Price to Realized Price</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script> <!-- Specified version -->
 </head>
 <body>
-    <h1>Realized Price Data Plot</h1>
+    <h1>Z-Score of BTC Close Price to Realized Price (Over 365 Days)</h1>
     <div style="width: 80%; margin: auto;">
         <canvas id="myChart"></canvas>
     </div>
@@ -23,16 +23,37 @@
                 // Parse the CSV data into rows and values
                 const rows = csvData.split('\n').map(row => row.split(','));
 
-                // Extract dates and RealizedPriceSTH, multiplying RealizedPriceSTH values by 2
-                const labels = rows.slice(1).map(row => row[0]); // Dates (first column), skip header
-                const values = rows.slice(1).map(row => parseFloat(row[2]) * 2); // RealizedPriceSTH (third column), times two
+                // Extract the BTC close price and RealizedPriceSTH, skipping the header
+                const labels = rows.slice(1).map(row => row[0]); // Dates (first column)
+                const btcClosePrices = rows.slice(1).map(row => parseFloat(row[1])); // BTC Close Price (second column)
+                const realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2])); // RealizedPriceSTH (third column)
+
+                // Compute the ratio of BTC close price to RealizedPriceSTH
+                const ratios = btcClosePrices.map((price, index) => price / realizedPriceSTH[index]);
+
+                // Function to compute the rolling z-score
+                function calculateZScore(data, windowSize) {
+                    let zScores = [];
+                    for (let i = windowSize - 1; i < data.length; i++) {
+                        let windowData = data.slice(i - windowSize + 1, i + 1);
+                        let mean = windowData.reduce((sum, value) => sum + value, 0) / windowSize;
+                        let variance = windowData.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / windowSize;
+                        let stdDev = Math.sqrt(variance);
+                        let zScore = (data[i] - mean) / stdDev;
+                        zScores.push(zScore);
+                    }
+                    return zScores;
+                }
+
+                // Calculate the z-scores for the ratios over a window of 365 days
+                const zScores = calculateZScore(ratios, 365);
 
                 // Chart.js data structure
                 const data = {
-                    labels: labels,
+                    labels: labels.slice(365 - 1), // Start labels from day 365
                     datasets: [{
-                        label: 'Realized Price (Times 2)',
-                        data: values,
+                        label: 'Z-Score of BTC Close Price to Realized Price',
+                        data: zScores,
                         borderColor: 'rgb(75, 192, 192)', // Line color
                         fill: false, // Do not fill under the line
                         tension: 0.1 // Smoothness of the line
@@ -55,14 +76,11 @@
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Realized Price (Times 2)'
+                                    text: 'Z-Score'
                                 },
-                                type: 'logarithmic', // Logarithmic y-axis
-                                position: 'left',
                                 ticks: {
-                                    min: 0.01, // Ensure no zero values
                                     callback: function(value) {
-                                        return value.toLocaleString(); // Format numbers with commas
+                                        return value.toFixed(2); // Format z-score to 2 decimal places
                                     }
                                 }
                             }
