@@ -3,52 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realized Price Plot</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script> <!-- Specified version -->
+    <title>Realized Price Data Plot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Realized Price Data (Logarithmic Scale)</h1>
-
-    <!-- Chart: Realized Price with Logarithmic Y-Axis -->
+    <h1>Realized Price Data</h1>
     <div style="width: 80%; margin: auto;">
-        <canvas id="chart"></canvas>
+        <canvas id="myChart"></canvas>
     </div>
 
     <script>
         // URL to your public CSV file
-        const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/BTC%20Close%20Price%20&%20RealizedPriceSTH.py';
+        const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/BTC%20Close%20Price%20&%20RealizedPriceSTH.csv';
 
         // Fetch the CSV file
         fetch(csvUrl)
-            .then(response => response.text())
+            .then(response => response.text()) // Fetch as text
             .then(csvData => {
                 // Parse the CSV data into rows and values
-                const rows = csvData.split('\n').map(row => row.split(';'));
+                const rows = csvData.split('\n').map(row => row.split(','));
 
-                // Skip the header and process the data from the second row
-                const labels = rows.slice(1).map(row => {
-                    // Parse the date in YY-MM-DD format (adjust for the new format)
-                    const dateParts = row[0].split('-');
-                    return new Date(`20${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`).toLocaleDateString();
-                }); // Dates (first column)
-
+                // Extract dates and realized prices
+                const labels = rows.slice(1).map(row => row[0]); // Dates (first column)
                 const realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2])); // RealizedPriceSTH (third column)
 
-                // Chart Data (Realized PriceSTH with Logarithmic Scale)
+                // Chart.js data structure
                 const data = {
                     labels: labels,
                     datasets: [{
                         label: 'Realized PriceSTH',
                         data: realizedPriceSTH,
-                        borderColor: 'rgb(153, 102, 255)', // Line color
-                        fill: false,
-                        tension: 0.1
+                        borderColor: 'rgb(75, 192, 192)', // Line color
+                        fill: false, // No fill under the line
+                        tension: 0.1 // Smoothness of the line
                     }]
                 };
 
-                // Chart Configuration (Logarithmic Y-Axis)
+                // Chart.js configuration
                 const config = {
-                    type: 'line',
+                    type: 'line', // Line chart
                     data: data,
                     options: {
                         responsive: true,
@@ -57,25 +50,12 @@
                                 title: {
                                     display: true,
                                     text: 'Date'
-                                },
-                                ticks: {
-                                    callback: function(value) {
-                                        return value; // Keep the date format intact
-                                    }
                                 }
                             },
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Realized PriceSTH (Logarithmic Scale)'
-                                },
-                                type: 'logarithmic', // Logarithmic y-axis
-                                position: 'left',
-                                ticks: {
-                                    min: 0.01, // Ensure no zero values
-                                    callback: function(value) {
-                                        return value.toLocaleString(); // Format numbers with commas
-                                    }
+                                    text: 'Realized PriceSTH'
                                 }
                             }
                         }
@@ -83,7 +63,7 @@
                 };
 
                 // Create the chart
-                const myChart = new Chart(document.getElementById('chart'), config);
+                const myChart = new Chart(document.getElementById('myChart'), config);
             })
             .catch(error => console.error('Error loading or parsing CSV:', error));
     </script>
