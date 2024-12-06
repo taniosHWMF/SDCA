@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realized Price Data Plot (Times 2)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Realized Price Data (Times 2)</h1>
+    <div style="width: 80%; margin: auto;">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        // URL to your public CSV file
+        const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/RealizedPriceSTH.csv';
+
+        // Fetch the CSV file
+        fetch(csvUrl)
+            .then(response => response.text()) // Fetch as text
+            .then(csvData => {
+                // Parse the CSV data into rows and values
+                const rows = csvData.split('\n').map(row => row.split(','));
+
+                // Extract dates and values, multiplying values by 2
+                const labels = rows.map(row => row[0]); // Dates (first column)
+                const values = rows.map(row => parseFloat(row[1]) * 2); // Values (second column), times two
+
+                // Chart.js data structure
+                const data = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Realized Price (Times 2)',
+                        data: values,
+                        borderColor: 'rgb(75, 192, 192)', // Line color
+                        fill: false, // Do not fill under the line
+                        tension: 0.1 // Smoothness of the line
+                    }]
+                };
+
+                // Chart.js configuration
+                const config = {
+                    type: 'line', // Line chart
+                    data: data,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Realized Price (Times 2)'
+                                }
+                            }
+                        }
+                    }
+                };
+
+                // Create the chart
+                const myChart = new Chart(document.getElementById('myChart'), config);
+            })
+            .catch(error => console.error('Error loading or parsing CSV:', error));
+    </script>
+</body>
+</html>
