@@ -80,6 +80,16 @@
                                     }
                                 }
                             }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    // Display line colors in legend without boxes
+                                    usePointStyle: true, // Use point style (circle) for the legend marker
+                                    boxWidth: 0, // Set to 0 to hide the box
+                                    boxHeight: 0, // Set to 0 to hide the box
+                                }
+                            }
                         }
                     }
                 };
