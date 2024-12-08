@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Realized Price Data</h1>
+    <h1>Realized Price and BTC Close Price Data</h1>
     <div style="width: 80%; margin: auto;">
         <canvas id="myChart"></canvas>
     </div>
@@ -23,20 +23,30 @@
                 // Parse the CSV data into rows and values
                 const rows = csvData.split('\n').map(row => row.split(','));
 
-                // Extract dates and realized prices
+                // Extract dates, BTC close prices, and realized prices
                 const labels = rows.slice(1).map(row => row[0]); // Dates (first column)
+                const btcClosePrice = rows.slice(1).map(row => parseFloat(row[1])); // BTC close price (second column)
                 const realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2])); // RealizedPriceSTH (third column)
 
                 // Chart.js data structure
                 const data = {
                     labels: labels,
-                    datasets: [{
-                        label: 'Realized PriceSTH',
-                        data: realizedPriceSTH,
-                        borderColor: 'rgb(75, 192, 192)', // Line color
-                        fill: false, // No fill under the line
-                        tension: 0 // Remove smoothing (straight line)
-                    }]
+                    datasets: [
+                        {
+                            label: 'BTC Close Price',
+                            data: btcClosePrice,
+                            borderColor: 'rgb(255, 99, 132)', // Line color for BTC Close Price
+                            fill: false, // No fill under the line
+                            tension: 0, // Remove smoothing (straight line)
+                        },
+                        {
+                            label: 'Realized PriceSTH',
+                            data: realizedPriceSTH,
+                            borderColor: 'rgb(75, 192, 192)', // Line color for Realized PriceSTH
+                            fill: false, // No fill under the line
+                            tension: 0, // Remove smoothing (straight line)
+                        }
+                    ]
                 };
 
                 // Chart.js configuration
@@ -55,7 +65,7 @@
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Realized PriceSTH'
+                                    text: 'Price'
                                 },
                                 type: 'logarithmic', // Set the y-axis to logarithmic
                                 position: 'left',
