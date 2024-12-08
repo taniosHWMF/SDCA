@@ -84,10 +84,12 @@
                         plugins: {
                             legend: {
                                 labels: {
-                                    // Customize the legend to use lines instead of points
-                                    usePointStyle: false, // This ensures the legend shows lines, not points
-                                    boxWidth: 0, // No box in legend, only the line
-                                    boxHeight: 0 // No box in legend
+                                    // Customizing the box color in the legend
+                                    boxWidth: 12, // Adjust the box width (optional)
+                                    boxHeight: 12, // Adjust the box height (optional)
+                                    usePointStyle: true, // Use point style (circle) for the legend box
+                                    // If you want to change box color in the legend
+                                    color: 'rgb(0,0,0)', // Set text color of the legend labels (default is black)
                                 }
                             }
                         }
