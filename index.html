@@ -52,9 +52,7 @@
         function updateChart() {
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
-            const [zMin, zMax] = getZScoreRange(zScores);
 
-            // Create an array of colors based on Z-scores for each data point
             const borderColor = zScores.map(zScore => getColorBasedOnZScore(zScore));
 
             const mainChartData = {
@@ -63,7 +61,7 @@
                     {
                         label: 'BTC Close Price',
                         data: btcClosePrice,
-                        borderColor: borderColor,  // Apply colors dynamically for each data point
+                        borderColor: borderColor,
                         backgroundColor: 'rgba(0, 0, 0, 0)',
                         borderWidth: 2,
                         fill: false,
@@ -158,50 +156,44 @@
         function getColorBasedOnZScore(zScore) {
             let r, g, b;
 
-            if (zScore > 3) {
-                // Bright green for Z-score 3+
+            if (zScore >= 3) {
+                // Very bright green for Z-scores close to 3
                 r = 0;
                 g = 255;
                 b = 0;
-            } else if (zScore > 1) {
-                // Darker green as it moves closer to 0
+            } else if (zScore >= 1) {
+                // Bright green, but a bit darker as the score moves down
                 r = Math.floor(255 * (1 - (zScore - 1) / 2));
                 g = 255;
                 b = 0;
             } else if (zScore > 0) {
-                // Slightly darker green
+                // Darker green as the score approaches 0
                 r = Math.floor(255 * (1 - zScore));
                 g = Math.floor(255 * zScore);
                 b = 0;
-            } else if (zScore < -3) {
-                // Bright red for Z-score -3-
+            } else if (zScore <= -3) {
+                // Very bright red for Z-scores close to -3
                 r = 255;
                 g = 0;
                 b = 0;
-            } else if (zScore < -1) {
-                // Darker red as it moves closer to 0
+            } else if (zScore <= -1) {
+                // Bright red, but a bit darker as the score moves up
                 r = 255;
                 g = Math.floor(255 * (1 + (zScore + 1) / 2));
                 b = 0;
             } else if (zScore < 0) {
-                // Slightly darker red
+                // Darker red as the score approaches 0
                 r = 255;
                 g = Math.floor(255 * (1 + zScore));
                 b = 0;
             } else {
-                // For Z-scores between 0 and 1, use a mix of neutral color
+                // Default to black for Z-score exactly 0
                 r = 0;
                 g = 0;
                 b = 0;
             }
 
             return `rgb(${r}, ${g}, ${b})`;
-        }
-
-        function getZScoreRange(zScores) {
-            const zMin = Math.min(...zScores);
-            const zMax = Math.max(...zScores);
-            return [zMin, zMax];
         }
     </script>
 </body>
