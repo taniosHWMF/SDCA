@@ -7,49 +7,77 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: black; /* Set website background to black */
-            color: white; /* Set text color to white for visibility */
-            font-family: Arial, sans-serif;
+            background-color: #1e1e1e; /* Set a dark grey background */
+            color: white;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         h1, h2 {
             text-align: center;
-            color: white; /* Set header color to white */
-        }
-
-        input, button {
-            background-color: #444; /* Dark background for input and button */
-            color: white; /* White text color */
-            border: 1px solid #555; /* Border color */
-            padding: 10px;
-            margin: 10px;
-        }
-
-        input[type="number"] {
-            width: 60px;
-        }
-
-        .chart-container {
-            width: 80%;
-            margin: auto;
-            background-color: black; /* Set chart container background to black */
+            color: #ffffff;
             padding: 20px;
         }
 
-        canvas {
-            background-color: black; /* Set chart background to black */
+        .container {
+            width: 90%;
+            margin: 0 auto;
         }
+
+        .chart-container {
+            margin: 20px 0;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        input, button {
+            background-color: #444;
+            color: white;
+            border: 1px solid #555;
+            padding: 10px 15px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        input[type="number"] {
+            width: 80px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        canvas {
+            width: 100%;
+            max-height: 500px;
+            border-radius: 5px;
+        }
+
+        .form-container {
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
     <h1>Realized Price and BTC Close Price Data</h1>
-    <div class="chart-container">
-        <canvas id="myChart"></canvas>
+    <div class="container">
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+        <h2>Z-Score Chart</h2>
+        <div class="chart-container">
+            <canvas id="zScoreChart"></canvas>
+        </div>
+        <div class="form-container">
+            <h2>Rolling Window Size for Z-Score Calculation</h2>
+            <input type="number" id="windowSize" value="30" min="1" step="1">
+            <button onclick="updateChart()">Update Chart</button>
+        </div>
     </div>
-
-    <h2>Rolling Window Size for Z-Score Calculation</h2>
-    <input type="number" id="windowSize" value="30" min="1" step="1">
-    <button onclick="updateChart()">Update Chart</button>
 
     <script>
         // URL to your public CSV file
@@ -70,48 +98,32 @@
             .catch(error => console.error('Error loading or parsing CSV:', error));
 
         let myChart = null;
+        let zScoreChart = null;
 
         function updateChart() {
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
-            const btcLineColors = calculateLineColorBasedOnZScore(zScores);
 
+            // Main chart for Realized Price and BTC Close Price
             const mainChartData = {
                 labels: labels,
                 datasets: [
                     {
                         label: 'BTC Close Price',
                         data: btcClosePrice,
-                        borderColor: 'rgba(0, 0, 0, 0)',
-                        backgroundColor: 'rgba(0, 0, 0, 0)',
+                        borderColor: 'rgb(0, 123, 255)', // Set BTC price line to blue
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
                         borderWidth: 1,
-                        fill: false,
-                        segment: {
-                            borderColor: (ctx) => {
-                                const index = ctx.p0DataIndex;
-                                return btcLineColors[index];
-                            },
-                            borderWidth: 2
-                        }
+                        fill: true,
                     },
                     {
                         label: 'Realized PriceSTH',
                         data: realizedPriceSTH,
-                        borderColor: 'rgb(75, 192, 192)',
+                        borderColor: 'rgb(75, 192, 192)', // Set Realized PriceSTH line to green
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
                         borderWidth: 1
-                    },
-                    {
-                        label: 'Z-Score (BTC vs. Realized Price)',
-                        data: zScores,
-                        borderColor: 'rgb(255, 255, 255)',
-                        fill: false,
-                        tension: 0,
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        yAxisID: 'y2'
                     }
                 ]
             };
@@ -144,16 +156,56 @@
                                     return value.toLocaleString();
                                 }
                             }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            };
+
+            myChart = new Chart(document.getElementById('myChart'), mainChartConfig);
+
+            // Z-Score chart
+            const zScoreData = {
+                labels: labels,
+                datasets: [{
+                    label: 'Z-Score (BTC vs. Realized Price)',
+                    data: zScores,
+                    borderColor: 'rgb(255, 255, 255)',
+                    fill: false,
+                    tension: 0,
+                    pointRadius: 0,
+                    borderWidth: 1
+                }]
+            };
+
+            if (zScoreChart) {
+                zScoreChart.destroy();
+            }
+
+            const zScoreChartConfig = {
+                type: 'line',
+                data: zScoreData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
                         },
-                        y2: {
+                        y: {
                             title: {
                                 display: true,
                                 text: 'Z-Score'
                             },
-                            position: 'right',
                             ticks: {
-                                min: -5,
-                                max: 5,
                                 callback: function(value) {
                                     return value.toFixed(2);
                                 }
@@ -166,14 +218,14 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: 'white' // Set legend text color to white
+                                color: 'white'
                             }
                         }
                     }
                 }
             };
 
-            myChart = new Chart(document.getElementById('myChart'), mainChartConfig);
+            zScoreChart = new Chart(document.getElementById('zScoreChart'), zScoreChartConfig);
         }
 
         function calculateZScores(prices, realizedPrices, windowSize) {
@@ -187,18 +239,6 @@
                 zScores.push(-zScore);
             }
             return zScores;
-        }
-
-        function calculateLineColorBasedOnZScore(zScores) {
-            const lineColors = [];
-            for (let i = 0; i < zScores.length - 1; i++) {
-                const zScore = zScores[i];
-                const normalizedZScore = Math.max(-5, Math.min(5, zScore));
-                const r = Math.floor(255 * Math.max(0, -normalizedZScore / 5));
-                const g = Math.floor(255 * Math.max(0, normalizedZScore / 5));
-                lineColors.push(`rgba(${r}, ${g}, 0, 0.8)`); // Corrected the color generation
-            }
-            return lineColors;
         }
     </script>
 </body>
