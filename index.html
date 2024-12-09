@@ -53,7 +53,6 @@
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
             const [zMin, zMax] = getZScoreRange(zScores);
-            const btcLineColors = calculateLineColorBasedOnZScore(zScores, zMin, zMax);
 
             const mainChartData = {
                 labels: labels,
@@ -68,7 +67,7 @@
                         segment: {
                             borderColor: (ctx) => {
                                 const index = ctx.p0DataIndex;
-                                return btcLineColors[index];
+                                return getColorBasedOnZScore(zScores[index], zMin, zMax);
                             },
                             borderWidth: 2
                         }
@@ -165,24 +164,29 @@
             return [zMin, zMax];
         }
 
-        function calculateLineColorBasedOnZScore(zScores, zMin, zMax) {
-            const lineColors = [];
+        function getColorBasedOnZScore(zScore, zMin, zMax) {
+            // Normalize Z-scores to the range [0, 1]
             const range = zMax - zMin;
+            const normalized = (zScore - zMin) / range;
 
-            for (let i = 0; i < zScores.length - 1; i++) {
-                const zScore = zScores[i];
+            let r, g, b;
 
-                // Normalize Z-scores to the range [0, 1]
-                const normalized = (zScore - zMin) / range;
-
-                // Calculate red and green values based on normalized Z-score
-                const r = Math.floor(255 * (1 - normalized)); // Darker red for negative values
-                const g = Math.floor(255 * normalized);       // Darker green for positive values
-                const b = 0;  // No blue channel
-
-                lineColors.push(`rgba(${r}, ${g}, ${b}, 0.8)`); // Apply opacity
+            // If Z-score is exactly 0, make it white
+            if (zScore === 0) {
+                r = g = b = 255; // white
+            } else if (zScore < 0) {
+                // Transition from bright red to dark red
+                r = Math.floor(255 * (1 + zScore)); // Brighter red for more negative values
+                g = Math.floor(255 * (1 - zScore)); // Darker green for more negative values
+                b = 0;  // No blue channel
+            } else {
+                // Transition from bright green to dark green
+                r = 0;  // No red for positive values
+                g = Math.floor(255 * normalized); // Brighter green for higher values
+                b = 0;  // No blue channel
             }
-            return lineColors;
+
+            return `rgba(${r}, ${g}, ${b}, 0.8)`; // Apply opacity
         }
     </script>
 </body>
