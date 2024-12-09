@@ -54,23 +54,19 @@
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
             const [zMin, zMax] = getZScoreRange(zScores);
 
+            const borderColor = zScores.map(zScore => getColorBasedOnZScore(zScore, zMin, zMax));
+
             const mainChartData = {
                 labels: labels,
                 datasets: [
                     {
                         label: 'BTC Close Price',
                         data: btcClosePrice,
-                        borderColor: 'rgba(0, 0, 0, 0)',
+                        borderColor: borderColor,  // Apply colors dynamically for each data point
                         backgroundColor: 'rgba(0, 0, 0, 0)',
-                        borderWidth: 1,
+                        borderWidth: 2,
                         fill: false,
-                        segment: {
-                            borderColor: (ctx) => {
-                                const index = ctx.p0DataIndex;
-                                return getColorBasedOnZScore(zScores[index], zMin, zMax);
-                            },
-                            borderWidth: 2
-                        }
+                        pointRadius: 0,
                     },
                     {
                         label: 'Realized PriceSTH',
@@ -84,7 +80,7 @@
                     {
                         label: 'Z-Score (BTC vs. Realized Price)',
                         data: zScores,
-                        borderColor: 'rgb(255, 255, 255)',  // Set Z-Score line to white
+                        borderColor: 'rgb(255, 255, 255)',  // Z-score line is white
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
