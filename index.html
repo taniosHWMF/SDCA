@@ -196,7 +196,7 @@
                 const normalizedZScore = Math.max(-5, Math.min(5, zScore));
                 const r = Math.floor(255 * Math.max(0, -normalizedZScore / 5));
                 const g = Math.floor(255 * Math.max(0, normalizedZScore / 5));
-                lineColors.push(rgba(${r}, ${g}, 0, 0.8)); // Corrected the color generation
+                lineColors.push(`rgba(${r}, ${g}, 0, 0.8)`); // Corrected the color generation
             }
             return lineColors;
         }
