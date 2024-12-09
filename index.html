@@ -13,15 +13,8 @@
     </div>
 
     <h2>Rolling Window Size for Z-Score Calculation</h2>
-    <input type="number" id="windowSize" value="30" min="1" max="200" step="1">
+    <input type="number" id="windowSize" value="30" min="1" max="1000" step="1">
     <button onclick="updateChart()">Update Chart</button>
-
-    <h2>Adjust Z-Score Axis Range</h2>
-    <label for="zScoreMin">Z-Score Min:</label>
-    <input type="number" id="zScoreMin" value="-3" step="0.1">
-    <label for="zScoreMax">Z-Score Max:</label>
-    <input type="number" id="zScoreMax" value="3" step="0.1">
-    <button onclick="updateChart()">Apply Z-Score Range</button>
 
     <script>
         // URL to your public CSV file
@@ -57,10 +50,6 @@
 
             // Color each BTC close price segment based on the Z-score with smoother transition
             const btcLineColors = calculateLineColorBasedOnZScore(zScores);
-
-            // Get Z-score axis range from input
-            const zScoreMin = parseFloat(document.getElementById('zScoreMin').value);
-            const zScoreMax = parseFloat(document.getElementById('zScoreMax').value);
 
             // Data for the main chart (BTC Close Price vs. Realized Price)
             const mainChartData = {
@@ -140,8 +129,6 @@
                                 text: 'Z-Score'
                             },
                             position: 'right', // Secondary axis on the right side
-                            min: zScoreMin, // Set the min of the Z-score axis
-                            max: zScoreMax, // Set the max of the Z-score axis
                             ticks: {
                                 callback: function(value) {
                                     return value.toFixed(2); // Format Z-scores to 2 decimal places
