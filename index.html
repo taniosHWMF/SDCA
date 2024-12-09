@@ -84,7 +84,7 @@
                     {
                         label: 'Z-Score (BTC vs. Realized Price)',
                         data: zScores,
-                        borderColor: 'rgb(255, 255, 255)',
+                        borderColor: 'rgb(0, 0, 0)',
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
@@ -153,40 +153,45 @@
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
                 const zScore = (prices[i] - mean) / stdDev;
-                zScores.push(zScore);
+                zScores.push(zScore); // Don't invert the Z-score
             }
             return zScores;
         }
 
+        // Function to dynamically calculate color based on Z-score
+        function getColorBasedOnZScore(zScore, zMin, zMax) {
+            // Normalize the Z-score between -3 and 3
+            const normalizedZScore = (zScore - zMin) / (zMax - zMin);
+            
+            let r, g, b;
+            
+            if (normalizedZScore > 0) {
+                // Bright green for higher Z-scores (closer to 3)
+                r = Math.floor(255 * (1 - normalizedZScore));
+                g = Math.floor(255 * normalizedZScore);
+                b = 0;
+            } else {
+                // Bright red for lower Z-scores (closer to -3)
+                r = Math.floor(255 * Math.abs(normalizedZScore));
+                g = 0;
+                b = 0;
+            }
+
+            // Z-score of 0 should be black
+            if (zScore === 0) {
+                r = 0;
+                g = 0;
+                b = 0;
+            }
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // Function to get Z-score range (min, max) for dynamic color scaling
         function getZScoreRange(zScores) {
             const zMin = Math.min(...zScores);
             const zMax = Math.max(...zScores);
             return [zMin, zMax];
-        }
-
-        function getColorBasedOnZScore(zScore, zMin, zMax) {
-            // Normalize Z-scores to the range [0, 1]
-            const range = zMax - zMin;
-            const normalized = (zScore - zMin) / range;
-
-            let r, g, b;
-
-            // If Z-score is exactly 0, make it white
-            if (zScore === 0) {
-                r = g = b = 255; // white
-            } else if (zScore < 0) {
-                // Transition from bright red to dark red for negative Z-scores
-                r = Math.floor(255 * (1 - Math.abs(zScore))); // Brighter red for less negative Z-scores
-                g = Math.floor(255 * (1 + zScore)); // Darker green for negative Z-scores
-                b = 0;  // No blue channel
-            } else {
-                // Transition from bright green to dark green for positive Z-scores
-                r = 0;  // No red for positive Z-scores
-                g = Math.floor(255 * normalized); // Brighter green for higher Z-scores
-                b = 0;  // No blue channel
-            }
-
-            return `rgba(${r}, ${g}, ${b}, 0.8)`; // Apply opacity
         }
     </script>
 </body>
