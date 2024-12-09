@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realized Price Data Plot</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script> <!-- Zoom plugin -->
 </head>
 <body>
     <h1>Realized Price and BTC Close Price Data</h1>
@@ -54,7 +53,7 @@
                     ]
                 };
 
-                // Chart.js configuration with zoom and pan enabled
+                // Chart.js configuration
                 const config = {
                     type: 'line', // Line chart
                     data: data,
@@ -78,25 +77,6 @@
                                     // Optional: Format ticks to display in a readable way
                                     callback: function(value) {
                                         return value.toLocaleString(); // Format numbers with commas
-                                    }
-                                }
-                            }
-                        },
-                        plugins: {
-                            zoom: {
-                                pan: {
-                                    enabled: true, // Enable panning
-                                    mode: 'xy', // Allow panning in both x and y directions
-                                    speed: 10, // Set the panning speed
-                                    threshold: 10 // Minimum distance before panning is enabled
-                                },
-                                zoom: {
-                                    enabled: true, // Enable zooming
-                                    mode: 'xy', // Allow zooming in both x and y directions
-                                    speed: 0.1, // Set zoom speed
-                                    sensitivity: 3, // Zoom sensitivity
-                                    onZoomComplete: function({chart}) {
-                                        console.log('Zoom complete', chart); // Optional: log after zoom completes
                                     }
                                 }
                             }
