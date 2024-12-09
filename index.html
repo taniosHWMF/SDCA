@@ -5,6 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realized Price Data Plot</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+        }
+        input, button {
+            background-color: #444;
+            color: white;
+            border: 1px solid #777;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input:focus, button:focus {
+            outline: none;
+            border-color: #fff;
+        }
+    </style>
 </head>
 <body>
     <h1>Realized Price and BTC Close Price Data</h1>
@@ -94,26 +121,36 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Date'
+                                text: 'Date',
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Price'
+                                text: 'Price',
+                                color: 'white'
                             },
                             type: 'logarithmic',
                             position: 'left',
                             ticks: {
                                 callback: function(value) {
                                     return value.toLocaleString();
-                                }
+                                },
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)'
                             }
                         },
                         y2: {
                             title: {
                                 display: true,
-                                text: 'Z-Score'
+                                text: 'Z-Score',
+                                color: 'white'
                             },
                             position: 'right',
                             ticks: {
@@ -121,10 +158,18 @@
                                 max: 5,
                                 callback: function(value) {
                                     return value.toFixed(2);
-                                }
+                                },
+                                color: 'white'
                             },
                             grid: {
                                 drawOnChartArea: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
                             }
                         }
                     }
