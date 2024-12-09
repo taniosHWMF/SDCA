@@ -52,7 +52,8 @@
         function updateChart() {
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
-            const btcLineColors = calculateLineColorBasedOnZScore(zScores);
+            const [zMin, zMax] = getZScoreRange(zScores);
+            const btcLineColors = calculateLineColorBasedOnZScore(zScores, zMin, zMax);
 
             const mainChartData = {
                 labels: labels,
@@ -153,23 +154,33 @@
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
                 const zScore = (prices[i] - mean) / stdDev;
-                zScores.push(-zScore);
+                zScores.push(zScore);  // No negation applied here
             }
             return zScores;
         }
 
-        function calculateLineColorBasedOnZScore(zScores) {
+        function getZScoreRange(zScores) {
+            const zMin = Math.min(...zScores);
+            const zMax = Math.max(...zScores);
+            return [zMin, zMax];
+        }
+
+        function calculateLineColorBasedOnZScore(zScores, zMin, zMax) {
             const lineColors = [];
+            const range = zMax - zMin;
+
             for (let i = 0; i < zScores.length - 1; i++) {
                 const zScore = zScores[i];
 
-                const normalized = 1 / (1 + Math.exp(-zScore)); // Sigmoid normalization for smoother color transition
+                // Normalize Z-scores to the range [0, 1]
+                const normalized = (zScore - zMin) / range;
 
-                const r = Math.floor(255 * (1 - normalized));
-                const g = Math.floor(255 * normalized);
-                const b = 0;
+                // Calculate red and green values based on normalized Z-score
+                const r = Math.floor(255 * (1 - normalized)); // Darker red for negative values
+                const g = Math.floor(255 * normalized);       // Darker green for positive values
+                const b = 0;  // No blue channel
 
-                lineColors.push(`rgba(${r}, ${g}, ${b}, 0.8)`);
+                lineColors.push(`rgba(${r}, ${g}, ${b}, 0.8)`); // Apply opacity
             }
             return lineColors;
         }
