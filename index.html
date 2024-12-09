@@ -49,7 +49,7 @@
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
 
             // Color each BTC close price point based on the Z-score with smoother transition
-            const btcCloseColors = calculateColorBasedOnZScore(zScores);
+            const btcCloseColors = calculateColorBasedOnZScore(zScores, btcClosePrice, realizedPriceSTH);
 
             // Data for the main chart (BTC Close Price vs. Realized Price)
             const mainChartData = {
@@ -155,7 +155,7 @@
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
 
                 // Calculate Z-score for the corresponding BTC Close Price (inverted logic)
-                const zScore = -((prices[i] - mean) / stdDev); // Inverted Z-score logic
+                const zScore = (prices[i] - mean) / stdDev; // Normalized Z-score
                 
                 // Push the Z-score for this index
                 zScores.push(zScore);
@@ -164,9 +164,14 @@
             return zScores;
         }
 
-        // Function to calculate color based on Z-score values with smooth transitions
-        function calculateColorBasedOnZScore(zScores) {
-            return zScores.map(zScore => {
+        // Function to calculate color based on Z-score values (smooth transition from red to green)
+        function calculateColorBasedOnZScore(zScores, btcClosePrice, realizedPriceSTH) {
+            return zScores.map((zScore, index) => {
+                // If BTC Price is above Realized Price, we get a negative Z-score (red)
+                if (btcClosePrice[index] > realizedPriceSTH[index]) {
+                    zScore = -zScore;  // Flip Z-score for red color when BTC is above Realized Price
+                }
+
                 // Normalize the Z-score for color scale mapping
                 const normalizedZScore = Math.max(-3, Math.min(3, zScore)); // Clamping Z-score between -3 and 3
 
