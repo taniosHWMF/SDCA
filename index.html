@@ -55,7 +55,7 @@
             const [zMin, zMax] = getZScoreRange(zScores);
 
             // Create an array of colors based on Z-scores for each data point
-            const borderColor = zScores.map(zScore => getColorBasedOnZScore(zScore, zMin, zMax));
+            const borderColor = zScores.map(zScore => getColorBasedOnZScore(zScore));
 
             const mainChartData = {
                 labels: labels,
@@ -155,29 +155,44 @@
             return zScores;
         }
 
-        function getColorBasedOnZScore(zScore, zMin, zMax) {
-            // Normalize Z-scores between 0 and 1
-            const normalizedZScore = (zScore - zMin) / (zMax - zMin);
-            
+        function getColorBasedOnZScore(zScore) {
             let r, g, b;
 
-            if (normalizedZScore > 0) {
-                // Bright green for higher Z-scores (closer to 3)
-                r = Math.floor(255 * (1 - normalizedZScore));
-                g = Math.floor(255 * normalizedZScore);
+            if (zScore > 3) {
+                // Bright green for Z-score 3+
+                r = 0;
+                g = 255;
                 b = 0;
-            } else {
-                // Bright red for lower Z-scores (closer to -3)
-                r = Math.floor(255 * Math.abs(normalizedZScore));
+            } else if (zScore > 1) {
+                // Darker green as it moves closer to 0
+                r = Math.floor(255 * (1 - (zScore - 1) / 2));
+                g = 255;
+                b = 0;
+            } else if (zScore > 0) {
+                // Slightly darker green
+                r = Math.floor(255 * (1 - zScore));
+                g = Math.floor(255 * zScore);
+                b = 0;
+            } else if (zScore < -3) {
+                // Bright red for Z-score -3-
+                r = 255;
                 g = 0;
                 b = 0;
-            }
-
-            // Darker colors for Z-scores closer to 0
-            if (Math.abs(zScore) < 1) {
-                r = Math.floor(r * 0.5);
-                g = Math.floor(g * 0.5);
-                b = Math.floor(b * 0.5);
+            } else if (zScore < -1) {
+                // Darker red as it moves closer to 0
+                r = 255;
+                g = Math.floor(255 * (1 + (zScore + 1) / 2));
+                b = 0;
+            } else if (zScore < 0) {
+                // Slightly darker red
+                r = 255;
+                g = Math.floor(255 * (1 + zScore));
+                b = 0;
+            } else {
+                // For Z-scores between 0 and 1, use a mix of neutral color
+                r = 0;
+                g = 0;
+                b = 0;
             }
 
             return `rgb(${r}, ${g}, ${b})`;
