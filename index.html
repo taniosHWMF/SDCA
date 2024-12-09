@@ -43,6 +43,9 @@
             })
             .catch(error => console.error('Error loading or parsing CSV:', error));
 
+        let myChart = null;
+        let zScoreChart = null;
+
         function updateChart() {
             // Get the rolling window size from user input
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
@@ -75,6 +78,11 @@
                 ]
             };
 
+            // Destroy existing chart if it exists
+            if (myChart) {
+                myChart.destroy();
+            }
+
             // Main chart configuration
             const mainChartConfig = {
                 type: 'line', // Line chart
@@ -106,7 +114,7 @@
             };
 
             // Create the main chart
-            new Chart(document.getElementById('myChart'), mainChartConfig);
+            myChart = new Chart(document.getElementById('myChart'), mainChartConfig);
 
             // Data for the Z-score chart
             const zScoreChartData = {
@@ -123,6 +131,11 @@
                     }
                 ]
             };
+
+            // Destroy existing Z-score chart if it exists
+            if (zScoreChart) {
+                zScoreChart.destroy();
+            }
 
             // Z-score chart configuration
             const zScoreChartConfig = {
@@ -149,7 +162,7 @@
             };
 
             // Create the Z-score chart
-            new Chart(document.getElementById('zScoreChart'), zScoreChartConfig);
+            zScoreChart = new Chart(document.getElementById('zScoreChart'), zScoreChartConfig);
         }
 
         // Function to calculate Z-scores
