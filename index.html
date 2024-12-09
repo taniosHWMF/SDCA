@@ -184,7 +184,7 @@
                 const windowSlice = realizedPrices.slice(startIdx, i + 1);
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
-                const zScore = (prices[i] - mean) / stdDev;
+                const zScore = stdDev === 0 ? 0 : (prices[i] - mean) / stdDev;
                 zScores.push(-zScore);
             }
             return zScores;
