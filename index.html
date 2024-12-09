@@ -185,7 +185,7 @@
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
                 const zScore = stdDev === 0 ? 0 : (prices[i] - mean) / stdDev;
-                zScores.push(-zScore);
+                zScores.push(-zScore/10);
             }
             return zScores;
         }
