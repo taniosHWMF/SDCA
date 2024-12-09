@@ -54,6 +54,7 @@
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
             const [zMin, zMax] = getZScoreRange(zScores);
 
+            // Create an array of colors based on Z-scores for each data point
             const borderColor = zScores.map(zScore => getColorBasedOnZScore(zScore, zMin, zMax));
 
             const mainChartData = {
@@ -66,7 +67,7 @@
                         backgroundColor: 'rgba(0, 0, 0, 0)',
                         borderWidth: 2,
                         fill: false,
-                        pointRadius: 0,
+                        pointRadius: 0, // Hide points
                     },
                     {
                         label: 'Realized PriceSTH',
@@ -155,6 +156,7 @@
         }
 
         function getColorBasedOnZScore(zScore, zMin, zMax) {
+            // Normalize Z-scores between 0 and 1
             const normalizedZScore = (zScore - zMin) / (zMax - zMin);
             
             let r, g, b;
