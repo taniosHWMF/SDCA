@@ -13,7 +13,7 @@
     </div>
 
     <h2>Rolling Window Size for Z-Score Calculation</h2>
-    <input type="number" id="windowSize" value="30" min="1" max="1000" step="1">
+    <input type="number" id="windowSize" value="30" min="1" step="1">
     <button onclick="updateChart()">Update Chart</button>
 
     <script>
@@ -24,17 +24,12 @@
 
         // Fetch the CSV file
         fetch(csvUrl)
-            .then(response => response.text()) // Fetch as text
+            .then(response => response.text())
             .then(csvData => {
-                // Parse the CSV data into rows and values
                 const rows = csvData.split('\n').map(row => row.split(','));
-
-                // Extract dates, BTC close prices, and realized prices
-                labels = rows.slice(1).map(row => row[0]); // Dates (first column)
-                btcClosePrice = rows.slice(1).map(row => parseFloat(row[1])); // BTC close price (second column)
-                realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2])); // RealizedPriceSTH (third column)
-
-                // Initialize the chart with default window size
+                labels = rows.slice(1).map(row => row[0]);
+                btcClosePrice = rows.slice(1).map(row => parseFloat(row[1]));
+                realizedPriceSTH = rows.slice(1).map(row => parseFloat(row[2]));
                 updateChart();
             })
             .catch(error => console.error('Error loading or parsing CSV:', error));
@@ -42,30 +37,24 @@
         let myChart = null;
 
         function updateChart() {
-            // Get the rolling window size from user input
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
-
-            // Calculate Z-scores for the BTC Close Price relative to Realized Price
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
-
-            // Color each BTC close price segment based on the Z-score with smoother transition
             const btcLineColors = calculateLineColorBasedOnZScore(zScores);
 
-            // Data for the main chart (BTC Close Price vs. Realized Price)
             const mainChartData = {
                 labels: labels,
                 datasets: [
                     {
                         label: 'BTC Close Price',
                         data: btcClosePrice,
-                        borderColor: 'rgba(0, 0, 0, 0)', // No line color (line is now colored based on Z-score)
-                        backgroundColor: 'rgba(0, 0, 0, 0)', // No background color (line itself is colored)
+                        borderColor: 'rgba(0, 0, 0, 0)',
+                        backgroundColor: 'rgba(0, 0, 0, 0)',
                         borderWidth: 1,
                         fill: false,
                         segment: {
                             borderColor: (ctx) => {
                                 const index = ctx.p0DataIndex;
-                                return btcLineColors[index]; // Color each line segment based on the Z-score
+                                return btcLineColors[index];
                             },
                             borderWidth: 2
                         }
@@ -73,7 +62,7 @@
                     {
                         label: 'Realized PriceSTH',
                         data: realizedPriceSTH,
-                        borderColor: 'rgb(75, 192, 192)', // Line color for Realized PriceSTH
+                        borderColor: 'rgb(75, 192, 192)',
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
@@ -82,7 +71,7 @@
                     {
                         label: 'Z-Score (BTC vs. Realized Price)',
                         data: zScores,
-                        borderColor: 'rgb(0, 0, 0)', // Line color for Z-score (black)
+                        borderColor: 'rgb(0, 0, 0)',
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
@@ -92,12 +81,10 @@
                 ]
             };
 
-            // Destroy existing chart if it exists
             if (myChart) {
                 myChart.destroy();
             }
 
-            // Main chart configuration
             const mainChartConfig = {
                 type: 'line',
                 data: mainChartData,
@@ -144,7 +131,6 @@
                 }
             };
 
-            // Create the main chart
             myChart = new Chart(document.getElementById('myChart'), mainChartConfig);
         }
 
@@ -156,7 +142,7 @@
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
                 const zScore = (prices[i] - mean) / stdDev;
-                zScores.push(-zScore); // Flip sign: positive if price below, negative if above
+                zScores.push(-zScore);
             }
             return zScores;
         }
