@@ -16,10 +16,6 @@
     <input type="number" id="windowSize" value="30" min="1" max="200" step="1">
     <button onclick="updateChart()">Update Chart</button>
 
-    <div style="width: 80%; margin: auto; margin-top: 50px;">
-        <canvas id="zScoreChart"></canvas>
-    </div>
-
     <script>
         // URL to your public CSV file
         const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/BTC%20Close%20Price%20&%20RealizedPriceSTH.csv';
@@ -44,7 +40,6 @@
             .catch(error => console.error('Error loading or parsing CSV:', error));
 
         let myChart = null;
-        let zScoreChart = null;
 
         function updateChart() {
             // Get the rolling window size from user input
@@ -74,6 +69,16 @@
                         tension: 0, // Remove smoothing (straight line)
                         pointRadius: 0, // Remove dots at data points
                         borderWidth: 1 // Thinner line
+                    },
+                    {
+                        label: 'Z-Score (BTC vs. Realized Price)',
+                        data: zScores,
+                        borderColor: 'rgb(54, 162, 235)', // Line color for Z-score
+                        fill: false, // No fill under the line
+                        tension: 0, // Straight line
+                        pointRadius: 0, // No dots
+                        borderWidth: 1, // Thinner line
+                        yAxisID: 'y2' // Link to secondary y-axis
                     }
                 ]
             };
@@ -108,6 +113,21 @@
                                     return value.toLocaleString(); // Format numbers with commas
                                 }
                             }
+                        },
+                        y2: {
+                            title: {
+                                display: true,
+                                text: 'Z-Score'
+                            },
+                            position: 'right', // Secondary axis on the right side
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2); // Format Z-scores to 2 decimal places
+                                }
+                            },
+                            grid: {
+                                drawOnChartArea: false // Don't draw gridlines for secondary axis
+                            }
                         }
                     }
                 }
@@ -115,54 +135,6 @@
 
             // Create the main chart
             myChart = new Chart(document.getElementById('myChart'), mainChartConfig);
-
-            // Data for the Z-score chart
-            const zScoreChartData = {
-                labels: labels.slice(windowSize - 1), // Start from the window size to avoid undefined Z-scores
-                datasets: [
-                    {
-                        label: 'Z-Score (BTC vs. Realized Price)',
-                        data: zScores,
-                        borderColor: 'rgb(54, 162, 235)', // Line color for Z-score
-                        fill: false, // No fill under the line
-                        tension: 0, // Straight line
-                        pointRadius: 0, // No dots
-                        borderWidth: 1 // Thinner line
-                    }
-                ]
-            };
-
-            // Destroy existing Z-score chart if it exists
-            if (zScoreChart) {
-                zScoreChart.destroy();
-            }
-
-            // Z-score chart configuration
-            const zScoreChartConfig = {
-                type: 'line', // Line chart
-                data: zScoreChartData,
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Z-Score'
-                            },
-                            position: 'left',
-                        }
-                    }
-                }
-            };
-
-            // Create the Z-score chart
-            zScoreChart = new Chart(document.getElementById('zScoreChart'), zScoreChartConfig);
         }
 
         // Function to calculate Z-scores
