@@ -52,7 +52,8 @@
         function updateChart() {
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
-            const btcLineColors = calculateLineColorBasedOnZScore(zScores);
+            const [zMin, zMax] = getZScoreRange(zScores);
+            const btcLineColors = calculateLineColorBasedOnZScore(zScores, zMin, zMax);
 
             const mainChartData = {
                 labels: labels,
@@ -84,7 +85,7 @@
                     {
                         label: 'Z-Score (BTC vs. Realized Price)',
                         data: zScores,
-                        borderColor: 'white',
+                        borderColor: 'rgb(255, 255, 255)',
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
@@ -107,50 +108,35 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Date',
-                                color: 'white'
-                            },
-                            ticks: {
-                                color: 'white'
+                                text: 'Date'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Price',
-                                color: 'white'
+                                text: 'Price'
                             },
                             type: 'logarithmic',
                             position: 'left',
                             ticks: {
                                 callback: function(value) {
                                     return value.toLocaleString();
-                                },
-                                color: 'white'
+                                }
                             }
                         },
                         y2: {
                             title: {
                                 display: true,
-                                text: 'Z-Score',
-                                color: 'white'
+                                text: 'Z-Score'
                             },
                             position: 'right',
                             ticks: {
                                 callback: function(value) {
                                     return value.toFixed(2);
-                                },
-                                color: 'white'
+                                }
                             },
                             grid: {
                                 drawOnChartArea: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: 'white'
                             }
                         }
                     }
@@ -168,28 +154,33 @@
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
                 const zScore = (prices[i] - mean) / stdDev;
-                zScores.push(-zScore);
+                zScores.push(zScore);  // No negation applied here
             }
             return zScores;
         }
 
-        function calculateLineColorBasedOnZScore(zScores) {
+        function getZScoreRange(zScores) {
+            const zMin = Math.min(...zScores);
+            const zMax = Math.max(...zScores);
+            return [zMin, zMax];
+        }
+
+        function calculateLineColorBasedOnZScore(zScores, zMin, zMax) {
             const lineColors = [];
+            const range = zMax - zMin;
+
             for (let i = 0; i < zScores.length - 1; i++) {
                 const zScore = zScores[i];
 
-                let r, g, b;
-                if (zScore > 0) {
-                    r = Math.floor(255 * (1 - zScore / 10));
-                    g = 255;
-                    b = Math.floor(255 * (1 - zScore / 10));
-                } else {
-                    r = 255;
-                    g = Math.floor(255 * (1 + zScore / 10));
-                    b = Math.floor(255 * (1 + zScore / 10));
-                }
+                // Normalize Z-scores to the range [0, 1]
+                const normalized = (zScore - zMin) / range;
 
-                lineColors.push(`rgba(${r}, ${g}, ${b}, 0.8)`);
+                // Calculate red and green values based on normalized Z-score
+                const r = Math.floor(255 * (1 - normalized)); // Darker red for negative values
+                const g = Math.floor(255 * normalized);       // Darker green for positive values
+                const b = 0;  // No blue channel
+
+                lineColors.push(`rgba(${r}, ${g}, ${b}, 0.8)`); // Apply opacity
             }
             return lineColors;
         }
