@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realized Price Data Plot</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        #myChart {
+            background-color: black;
+        }
+    </style>
 </head>
 <body>
     <h1>Realized Price and BTC Close Price Data</h1>
@@ -13,8 +26,10 @@
     </div>
 
     <h2>Rolling Window Size for Z-Score Calculation</h2>
-    <input type="number" id="windowSize" value="30" min="1" step="1">
-    <button onclick="updateChart()">Update Chart</button>
+    <div style="text-align: center;">
+        <input type="number" id="windowSize" value="30" min="1" step="1">
+        <button onclick="updateChart()">Update Chart</button>
+    </div>
 
     <script>
         const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/BTC%20Close%20Price%20&%20RealizedPriceSTH.csv';
@@ -69,7 +84,7 @@
                     {
                         label: 'Z-Score (BTC vs. Realized Price)',
                         data: zScores,
-                        borderColor: 'rgb(0, 0, 0)',
+                        borderColor: 'white',
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
@@ -92,35 +107,50 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Date'
+                                text: 'Date',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Price'
+                                text: 'Price',
+                                color: 'white'
                             },
                             type: 'logarithmic',
                             position: 'left',
                             ticks: {
                                 callback: function(value) {
                                     return value.toLocaleString();
-                                }
+                                },
+                                color: 'white'
                             }
                         },
                         y2: {
                             title: {
                                 display: true,
-                                text: 'Z-Score'
+                                text: 'Z-Score',
+                                color: 'white'
                             },
                             position: 'right',
                             ticks: {
                                 callback: function(value) {
                                     return value.toFixed(2);
-                                }
+                                },
+                                color: 'white'
                             },
                             grid: {
                                 drawOnChartArea: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
                             }
                         }
                     }
