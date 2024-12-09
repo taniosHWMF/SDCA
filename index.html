@@ -5,19 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realized Price Data Plot</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-        h1, h2 {
-            text-align: center;
-        }
-        #myChart {
-            background-color: black;
-        }
-    </style>
 </head>
 <body>
     <h1>Realized Price and BTC Close Price Data</h1>
@@ -26,16 +13,16 @@
     </div>
 
     <h2>Rolling Window Size for Z-Score Calculation</h2>
-    <div style="text-align: center;">
-        <input type="number" id="windowSize" value="30" min="1" step="1">
-        <button onclick="updateChart()">Update Chart</button>
-    </div>
+    <input type="number" id="windowSize" value="30" min="1" step="1">
+    <button onclick="updateChart()">Update Chart</button>
 
     <script>
+        // URL to your public CSV file
         const csvUrl = 'https://raw.githubusercontent.com/taniosHWMF/SDCA/main/BTC%20Close%20Price%20&%20RealizedPriceSTH.csv';
 
         let labels, btcClosePrice, realizedPriceSTH;
 
+        // Fetch the CSV file
         fetch(csvUrl)
             .then(response => response.text())
             .then(csvData => {
@@ -52,8 +39,7 @@
         function updateChart() {
             const windowSize = parseInt(document.getElementById('windowSize').value, 10);
             const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
-
-            const borderColor = zScores.map(zScore => getColorBasedOnZScore(zScore));
+            const btcLineColors = calculateLineColorBasedOnZScore(zScores);
 
             const mainChartData = {
                 labels: labels,
@@ -61,12 +47,17 @@
                     {
                         label: 'BTC Close Price',
                         data: btcClosePrice,
-                        borderColor: borderColor,
+                        borderColor: 'rgba(0, 0, 0, 0)',
                         backgroundColor: 'rgba(0, 0, 0, 0)',
-                        borderWidth: 2,
+                        borderWidth: 1,
                         fill: false,
-                        pointRadius: 0, // Hide points
-                        lineTension: 0
+                        segment: {
+                            borderColor: (ctx) => {
+                                const index = ctx.p0DataIndex;
+                                return btcLineColors[index];
+                            },
+                            borderWidth: 2
+                        }
                     },
                     {
                         label: 'Realized PriceSTH',
@@ -80,11 +71,11 @@
                     {
                         label: 'Z-Score (BTC vs. Realized Price)',
                         data: zScores,
-                        borderColor: 'rgb(255, 255, 255)',  // Z-score line is white
+                        borderColor: 'rgb(0, 0, 0)',
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
-                        borderWidth: 2,
+                        borderWidth: 1,
                         yAxisID: 'y2'
                     }
                 ]
@@ -126,6 +117,8 @@
                             },
                             position: 'right',
                             ticks: {
+                                min: -5,
+                                max: 5,
                                 callback: function(value) {
                                     return value.toFixed(2);
                                 }
@@ -149,52 +142,21 @@
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
                 const zScore = (prices[i] - mean) / stdDev;
-                zScores.push(zScore);
+                zScores.push(-zScore);
             }
             return zScores;
         }
 
-        function getColorBasedOnZScore(zScore) {
-            let r, g, b;
-
-            if (zScore >= 3) {
-                // Very bright green for Z-scores close to 3
-                r = 0;
-                g = 255;
-                b = 0;
-            } else if (zScore >= 1) {
-                // Bright green, but a bit darker as the score moves down
-                r = Math.floor(255 * (1 - (zScore - 1) / 2));
-                g = 255;
-                b = 0;
-            } else if (zScore > 0) {
-                // Darker green as the score approaches 0
-                r = Math.floor(255 * (1 - zScore));
-                g = Math.floor(255 * zScore);
-                b = 0;
-            } else if (zScore <= -3) {
-                // Very bright red for Z-scores close to -3
-                r = 255;
-                g = 0;
-                b = 0;
-            } else if (zScore <= -1) {
-                // Bright red, but a bit darker as the score moves up
-                r = 255;
-                g = Math.floor(255 * (1 + (zScore + 1) / 2));
-                b = 0;
-            } else if (zScore < 0) {
-                // Darker red as the score approaches 0
-                r = 255;
-                g = Math.floor(255 * (1 + zScore));
-                b = 0;
-            } else {
-                // Default to black for Z-score exactly 0
-                r = 0;
-                g = 0;
-                b = 0;
+        function calculateLineColorBasedOnZScore(zScores) {
+            const lineColors = [];
+            for (let i = 0; i < zScores.length - 1; i++) {
+                const zScore = zScores[i];
+                const normalizedZScore = Math.max(-5, Math.min(5, zScore));
+                const r = Math.floor(255 * Math.max(0, -normalizedZScore / 5));
+                const g = Math.floor(255 * Math.max(0, normalizedZScore / 5));
+                lineColors.push(`rgba(${r}, ${g}, 0, 0.8)`);
             }
-
-            return `rgb(${r}, ${g}, ${b})`;
+            return lineColors;
         }
     </script>
 </body>
