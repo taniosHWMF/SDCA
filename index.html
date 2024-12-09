@@ -60,34 +60,34 @@
                         data: btcClosePrice,
                         borderColor: 'rgba(0, 0, 0, 0)', // No line color (line is now colored based on Z-score)
                         backgroundColor: 'rgba(0, 0, 0, 0)', // No background color (line itself is colored)
-                        borderWidth: 1, // Set the border width for the BTC line (which is now invisible)
-                        fill: false, // Do not fill under the line
+                        borderWidth: 1,
+                        fill: false,
                         segment: {
                             borderColor: (ctx) => {
                                 const index = ctx.p0DataIndex;
                                 return btcLineColors[index]; // Color each line segment based on the Z-score
                             },
-                            borderWidth: 2 // Make the line thicker
+                            borderWidth: 2
                         }
                     },
                     {
                         label: 'Realized PriceSTH',
                         data: realizedPriceSTH,
                         borderColor: 'rgb(75, 192, 192)', // Line color for Realized PriceSTH
-                        fill: false, // No fill under the line
-                        tension: 0, // Remove smoothing (straight line)
-                        pointRadius: 0, // Remove dots at data points
-                        borderWidth: 1 // Thinner line
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0,
+                        borderWidth: 1
                     },
                     {
                         label: 'Z-Score (BTC vs. Realized Price)',
                         data: zScores,
                         borderColor: 'rgb(0, 0, 0)', // Line color for Z-score (black)
-                        fill: false, // No fill under the line
-                        tension: 0, // Straight line
-                        pointRadius: 0, // No dots
-                        borderWidth: 1, // Thinner line
-                        yAxisID: 'y2' // Link to secondary y-axis
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        yAxisID: 'y2'
                     }
                 ]
             };
@@ -99,7 +99,7 @@
 
             // Main chart configuration
             const mainChartConfig = {
-                type: 'line', // Line chart
+                type: 'line',
                 data: mainChartData,
                 options: {
                     responsive: true,
@@ -115,11 +115,11 @@
                                 display: true,
                                 text: 'Price'
                             },
-                            type: 'logarithmic', // Set the y-axis to logarithmic
+                            type: 'logarithmic',
                             position: 'left',
                             ticks: {
                                 callback: function(value) {
-                                    return value.toLocaleString(); // Format numbers with commas
+                                    return value.toLocaleString();
                                 }
                             }
                         },
@@ -128,14 +128,16 @@
                                 display: true,
                                 text: 'Z-Score'
                             },
-                            position: 'right', // Secondary axis on the right side
+                            position: 'right',
                             ticks: {
+                                min: -5,
+                                max: 5,
                                 callback: function(value) {
-                                    return value.toFixed(2); // Format Z-scores to 2 decimal places
+                                    return value.toFixed(2);
                                 }
                             },
                             grid: {
-                                drawOnChartArea: false // Don't draw gridlines for secondary axis
+                                drawOnChartArea: false
                             }
                         }
                     }
@@ -146,48 +148,27 @@
             myChart = new Chart(document.getElementById('myChart'), mainChartConfig);
         }
 
-        // Function to calculate Z-scores with a rolling window (corrected logic)
         function calculateZScores(prices, realizedPrices, windowSize) {
             const zScores = [];
-            
-            // Calculate Z-scores for each point based on the rolling window
             for (let i = 0; i < prices.length; i++) {
-                // Ensure we only calculate Z-scores when we have enough data (for the first 'windowSize' elements, use the available data)
                 const startIdx = Math.max(0, i - windowSize + 1);
                 const windowSlice = realizedPrices.slice(startIdx, i + 1);
-                
-                // Calculate the mean of the window slice
                 const mean = windowSlice.reduce((acc, val) => acc + val, 0) / windowSlice.length;
-
-                // Calculate the standard deviation of the window slice
                 const stdDev = Math.sqrt(windowSlice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / windowSlice.length);
-
-                // Calculate Z-score for the corresponding BTC Close Price (inverted logic)
-                const zScore = (prices[i] - mean) / stdDev; // Normalized Z-score
-                
-                // Push the Z-score for this index
-                zScores.push(zScore);
+                const zScore = (prices[i] - mean) / stdDev;
+                zScores.push(-zScore); // Flip sign: positive if price below, negative if above
             }
-
             return zScores;
         }
 
-        // Function to calculate line color based on Z-score values (smooth transition from red to green)
         function calculateLineColorBasedOnZScore(zScores) {
             const lineColors = [];
             for (let i = 0; i < zScores.length - 1; i++) {
                 const zScore = zScores[i];
-                
-                // Invert the logic: red for negative Z-scores and green for positive Z-scores
-                const normalizedZScore = Math.max(-3, Math.min(3, zScore)); // Clamping Z-score between -3 and 3
-
-                // Interpolating the color scale from red (-3) to green (+3)
-                const r = Math.floor(Math.max(0, 255 * (3 - normalizedZScore) / 6));
-                const g = Math.floor(Math.max(0, 255 * (normalizedZScore + 3) / 6));
-                const b = 0; // Blue remains 0 for a red-green transition
-
-                // Add the color for the current segment
-                lineColors.push(`rgba(${r}, ${g}, ${b}, 0.8)`); // Smoother transition with some opacity
+                const normalizedZScore = Math.max(-5, Math.min(5, zScore));
+                const r = Math.floor(255 * Math.max(0, -normalizedZScore / 5));
+                const g = Math.floor(255 * Math.max(0, normalizedZScore / 5));
+                lineColors.push(`rgba(${r}, ${g}, 0, 0.8)`);
             }
             return lineColors;
         }
