@@ -50,6 +50,7 @@
     <h2>Rolling Window Size for Z-Score Calculation</h2>
     <input type="number" id="windowSize" value="30" min="1" step="1">
     <button onclick="updateChart()">Update Chart</button>
+    <button onclick="downloadZScores()">Download Z-Scores</button>
 
     <script>
         // URL to your public CSV file
@@ -199,6 +200,26 @@
                 lineColors.push(`rgba(${r}, ${g}, 0, 0.8)`); // Corrected the color generation
             }
             return lineColors;
+        }
+        function downloadZScores() {
+            const windowSize = parseInt(document.getElementById('windowSize').value, 10);
+            const zScores = calculateZScores(btcClosePrice, realizedPriceSTH, windowSize);
+            const rows = [["Date", "BTC Close Price", "Realized Price", "Z-Score"]];
+        
+            for (let i = 0; i < labels.length; i++) {
+                rows.push([labels[i], btcClosePrice[i], realizedPriceSTH[i], zScores[i]]);
+            }
+        
+            const csvContent = rows.map(row => row.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+        
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "z_scores.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
